@@ -51,11 +51,11 @@ if [ -z "$REPLICA_ID" ]; then
     exit 1
 fi
 
-# Determine the count of the events table
-echo "Calculating length of events table..."
-COUNT=$(echo "r.db('dtr2').table('events').count()" | docker run --entrypoint=rethinkcli -i --rm --net dtr-ol -e DTR_REPLICA_ID=$REPLICA_ID -v dtr-ca-$REPLICA_ID:/ca docker/dtr-rethink:2.5.0 non-interactive)
+# Determine the count of the scanned_layers table
+echo "Calculating length of scanned_layers table..."
+COUNT=$(echo "r.db('dtr2').table('scanned_layers').count()" | docker run --entrypoint=rethinkcli -i --rm --net dtr-ol -e DTR_REPLICA_ID=$REPLICA_ID -v dtr-ca-$REPLICA_ID:/ca docker/dtr-rethink:2.5.0 non-interactive)
 if [ -z "$COUNT" ]; then
-    echo "Error: Unable to calculate length of events table, exiting"
+    echo "Error: Unable to calculate length of scanned_layers table, exiting"
     exit 1
 elif [ $COUNT -eq 0 ]; then
     echo "Nothing to delete, exiting"
@@ -72,11 +72,11 @@ if [ -z "$MAX" ]; then
 fi
 
 # Start deleting in batches
-echo -e "Deleting $COUNT events from the DTR events table in batches of $LIMIT, this may take awhile..."
+echo -e "Deleting $COUNT records from the DTR scanned_layers table in batches of $LIMIT, this may take awhile..."
 for i in `seq $MAX`;
 do
-    echo "r.db('dtr2').table('events').limit($LIMIT).delete()" | docker run --entrypoint=rethinkcli -i --rm --net dtr-ol -e DTR_REPLICA_ID=$REPLICA_ID -v dtr-ca-$REPLICA_ID:/ca docker/dtr-rethink:2.5.0 non-interactive
+    echo "r.db('dtr2').table('scanned_layers').limit($LIMIT).delete()" | docker run --entrypoint=rethinkcli -i --rm --net dtr-ol -e DTR_REPLICA_ID=$REPLICA_ID -v dtr-ca-$REPLICA_ID:/ca docker/dtr-rethink:2.5.0 non-interactive
     echo -e "\n"$(date) "Completed batch: $i of $MAX"
 done
 
-echo "Done: events table deleted"
+echo "Done: scanned_layers table deleted"
